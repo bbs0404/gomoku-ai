@@ -91,30 +91,46 @@ int isEnded(Vec2 action) {
 	return 0;
 }
 
-int evaluatePattern(int count, int open, int turn) {
+int evaluatePattern(int count, int open, int turn, int * three, int * four) {
 	if (open == 0)
 		return 0;
 	switch (count) {
 	case 4:
 		if (!turn) {
-			if (open == 2)
+			if (open == 2) {
+				*four = 1;
 				return 500000;
-			else
-				return 50;
+			}
+			else {
+				if (*three || *four)
+					return 500000;
+				else {
+					*four = 1;
+					return 50;
+				}
+			}
 		}
-		else
+		else {
+			*four = 1;
 			return 100000000;
+		}
 		break;
 	case 3:
 		if (!turn) {
-			if (open == 2)
+			if (open == 2) {
+				*three = 1;
+				if (*four)
+					return 500000;
 				return 50;
+			}
 			else
 				return 5;
 		}
 		else {
-			if (open == 2)
+			if (open == 2) {
+				*three = 1;
 				return 10000;
+			}
 			else
 				return 7;
 		}
@@ -133,30 +149,46 @@ int evaluatePattern(int count, int open, int turn) {
 	}
 }
 
-int evaluateEnemyPattern(int count, int open, int turn) {
+int evaluateEnemyPattern(int count, int open, int turn, int * three, int * four) {
 	if (open == 0)
 		return 0;
 	switch (count) {
 	case 4:
 		if (turn) {
-			if (open == 2)
+			if (open == 2) {
+				*four = 1;
 				return -750000;
-			else
-				return -75;
+			}
+			else {
+				if (*four || *three)
+					return -750000;
+				else {
+					*four = 1;
+					return -75;
+				}
+			}
 		}
-		else
+		else {
+			*four = 1;
 			return -150000000;
+		}
 		break;
 	case 3:
 		if (turn) {
-			if (open == 2)
+			if (open == 2) {
+				*three = 1;
+				if (*four)
+					return -750000;
 				return -75;
+			}
 			else
-				return -10;
+				return -7;
 		}
 		else {
-			if (open == 2)
+			if (open == 2) {
+				*three = 1;
 				return -150000;
+			}
 			else
 				return -7;
 		}
@@ -177,6 +209,8 @@ int evaluateEnemyPattern(int count, int open, int turn) {
 
 void evaluate(Node * state) {
 	int t = (turn % 2 == 0);
+	int three = 0, four = 0;
+	int ethree = 0, efour = 0;
 	char tmpMap[19][20];
 	for (int i = 0; i < 19; ++i) { //¡æ
 		for (int j = 0; j < 19; ++j) {
@@ -198,7 +232,7 @@ void evaluate(Node * state) {
 					state->value = 1000000000;
 					return;
 				}
-				state->value += evaluatePattern(count, openEnd, t);
+				state->value += evaluatePattern(count, openEnd, t, &three, &four);
 				--j;
 			}
 			else {
@@ -216,7 +250,7 @@ void evaluate(Node * state) {
 					state->value = -200000000;
 					return;
 				}
-				state->value += evaluateEnemyPattern(count, openEnd, t);
+				state->value += evaluateEnemyPattern(count, openEnd, t, &ethree, &efour);
 				--j;
 			}
 		}
@@ -245,7 +279,7 @@ void evaluate(Node * state) {
 					return;
 				}
 
-				state->value += evaluatePattern(count, openEnd, t);
+				state->value += evaluatePattern(count, openEnd, t, &three, &four);
 				--i;
 			}
 			else {
@@ -265,7 +299,7 @@ void evaluate(Node * state) {
 					return;
 				}
 
-				state->value += evaluateEnemyPattern(count, openEnd, t);
+				state->value += evaluateEnemyPattern(count, openEnd, t, &ethree, &efour);
 				--i;
 			}
 		}
@@ -301,7 +335,7 @@ void evaluate(Node * state) {
 					return;
 				}
 
-				state->value += evaluatePattern(count, openEnd, t);
+				state->value += evaluatePattern(count, openEnd, t, &three, &four);
 			}
 			else {
 				if (j > 0 && i > 0 && tmpMap[i - 1][j - 1] == NONE)
@@ -320,7 +354,7 @@ void evaluate(Node * state) {
 					return;
 				}
 
-				state->value += evaluateEnemyPattern(count, openEnd, t);
+				state->value += evaluateEnemyPattern(count, openEnd, t, &ethree, &efour);
 			}
 			i = tmpI;
 			j = tmpJ;
@@ -349,7 +383,7 @@ void evaluate(Node * state) {
 					return;
 				}
 
-				state->value += evaluatePattern(count, openEnd, t);
+				state->value += evaluatePattern(count, openEnd, t, &three, &four);
 				--i;
 				++j;
 			}
@@ -370,7 +404,7 @@ void evaluate(Node * state) {
 					return;
 				}
 
-				state->value += evaluateEnemyPattern(count, openEnd, t);
+				state->value += evaluateEnemyPattern(count, openEnd, t, &ethree, &efour);
 				--i;
 				++j;
 			}
@@ -399,7 +433,7 @@ void evaluate(Node * state) {
 					return;
 				}
 
-				state->value += evaluatePattern(count, openEnd, t);
+				state->value += evaluatePattern(count, openEnd, t, &three, &four);
 				--i;
 				++j;
 			}
@@ -420,7 +454,7 @@ void evaluate(Node * state) {
 					return;
 				}
 
-				state->value += evaluateEnemyPattern(count, openEnd, t);
+				state->value += evaluateEnemyPattern(count, openEnd, t, &ethree, &efour);
 				--i;
 				++j;
 			}
